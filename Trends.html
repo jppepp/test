@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Инфляционные тренды</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #eef1ec;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1050;
+      border-bottom: 1px solid #ccc;
+      transition: transform 0.3s ease-in-out;
+    }
+    .header-hidden {
+      transform: translateY(-100%);
+    }
+    main {
+      padding-top: 7rem;
+      padding-bottom: 3rem;
+    }
+    .news-container {
+      background: white;
+      padding: 2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin: auto;
+      width: 90%;
+      max-width: 1400px;
+      border-radius: 8px;
+    }
+    .news-column {
+      padding: 1rem;
+    }
+    .news-title {
+      color: #28a745;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<header id="mainHeader" class="py-3 px-4 d-flex justify-content-between align-items-center">
+  <h1 class="fs-5 mb-0">СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ИНФЛЯЦИИ</h1>
+  <nav>
+    <a class="mx-2 text-decoration-none text-dark" href="index.html">Главная</a>
+    <a class="mx-2 text-decoration-none text-dark" href="index.html#cards-section">Сервис</a>
+    <a class="btn btn-outline-dark btn-sm" href="index.html#contact">Контакт</a>
+  </nav>
+</header>
+
+<main>
+  <div class="container mb-4 d-flex gap-3">
+    <div>
+      <label for="country" class="form-label">Источник:</label>
+      <select id="country" class="form-select">
+        <option selected disabled>Выберите источник</option>
+        <option value="Министерство Экономики">Министерство Экономики</option>
+        <option value="Министерство финансового развития">Министерство финансового развития</option>
+        <option value="Мировой банк">Мировой банк</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="news-container">
+    <h2 class="mb-4 text-center text-success">Инфляционные тренды</h2>
+    <div class="row" id="news-columns">
+      <!-- Новости будут подставлены сюда -->
+    </div>
+  </div>
+</main>
+
+<footer class="text-center text-muted py-4">
+  © 2025 Сравнение инфляции
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let lastScroll = 0;
+  const header = document.getElementById("mainHeader");
+
+  window.addEventListener("scroll", () => {
+    const currentScroll = window.pageYOffset;
+    header.classList.toggle("header-hidden", currentScroll > lastScroll);
+    lastScroll = currentScroll <= 0 ? 0 : currentScroll;
+  });
+
+  document.getElementById("country").addEventListener("change", fetchFilteredNews);
+
+  function fetchFilteredNews() {
+    const country = document.getElementById("country").value;
+
+    if (!country) return;
+
+    fetch(`/api/news/filter?country=${country}`)
+      .then(res => res.json())
+      .then(data => renderNews(data))
+      .catch(err => console.error("Ошибка загрузки новостей", err));
+  }
+
+  function renderNews(data) {
+    const container = document.getElementById("news-columns");
+    container.innerHTML = "";
+
+    const sources = [...new Set(data.map(item => item.source))];
+    sources.forEach(source => {
+      const column = document.createElement("div");
+      column.className = "col-md-4 news-column";
+
+      const heading = document.createElement("h5");
+      heading.className = "text-center text-secondary";
+      heading.textContent = source;
+      column.appendChild(heading);
+
+      data
+        .filter(n => n.source === source)
+        .slice(0, 3)
+        .forEach(news => {
+          const title = document.createElement("div");
+          title.className = "news-title";
+          title.textContent = news.title;
+          column.appendChild(title);
+        });
+
+      container.appendChild(column);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Сравнение по категориям</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #eef1ec;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1050;
+      border-bottom: 1px solid #ccc;
+      transition: transform 0.3s ease-in-out;
+    }
+    .header-hidden {
+      transform: translateY(-100%);
+    }
+    main {
+      padding-top: 5rem;
+      padding-bottom: 3rem;
+    }
+    .compare-box {
+      background: white;
+      padding: 2rem 3rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin: auto;
+      width: 95%;
+      max-width: 1400px;
+      border-radius: 8px;
+    }
+    canvas {
+      background: #f8f9fa;
+      border-radius: 6px;
+      padding: 1rem;
+    }
+    .loading-spinner {
+      display: none;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    .error-message {
+      display: none;
+      color: #dc3545;
+      margin-top: 1rem;
+    }
+    .year-select-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<header id="mainHeader" class="py-3 px-4 d-flex justify-content-between align-items-center">
+  <h1 class="fs-5 mb-0">СРАВНЕНИЕ ПОКАЗАТЕЛЕЙ ИНФЛЯЦИИ</h1>
+  <nav>
+    <a class="mx-2 text-decoration-none text-dark" href="index.html">Главная</a>
+    <a class="mx-2 text-decoration-none text-dark" href="index.html#cards-section">Сервис</a>
+    <a class="btn btn-outline-dark btn-sm" href="index.html#contact">Контакт</a>
+  </nav>
+</header>
+
+<main>
+  <div class="compare-box">
+    <form class="row g-3 mb-4">
+      <div class="col-md-3">
+        <label for="country1" class="form-label">Страна 1:</label>
+        <select class="form-select" id="country1">
+          <option data-value="Brazil">Бразилия</option>
+          <option data-value="Russia" selected>Россия</option>
+          <option data-value="India">Индия</option>
+          <option data-value="China">Китай</option>
+          <option data-value="Indonesia">Индонезия</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="country2" class="form-label">Страна 2:</label>
+        <select class="form-select" id="country2">
+          <option data-value="Brazil">Бразилия</option>
+          <option data-value="Russia">Россия</option>
+          <option data-value="India">Индия</option>
+          <option data-value="China" selected>Китай</option>
+          <option data-value="Indonesia">Индонезия</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="category" class="form-label">Категория:</label>
+        <select class="form-select" id="category">
+          <option data-value="CPI Inflation" selected>Общая</option>
+          <option data-value="CPI Housing Utilities">ЖКХ</option>
+          <option data-value="CPI Transportation">Транспорт</option>
+          <option data-value="Food Inflation">Еда</option>
+          <option data-value="PPI Inflation">Цены производителей</option>
+        </select>
+      </div>
+      <div class="col-md-3" id="periodContainer">
+        <label class="form-label">Период:</label>
+        <div class="year-select-container">
+          <select class="form-select" id="startYear"></select>
+          <span>—</span>
+          <select class="form-select" id="endYear"></select>
+        </div>
+      </div>
+    </form>
+
+    <div id="loadingSpinner" class="loading-spinner">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Загрузка...</span>
+      </div>
+      <p>Загрузка данных...</p>
+    </div>
+
+    <canvas id="comparisonChart" height="240"></canvas>
+  </div>
+</main>
+
+<footer class="text-center text-muted py-4">
+  © 2025 Сравнение инфляции
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Инициализация графика
+const ctx = document.getElementById("comparisonChart").getContext("2d");
+let chart = new Chart(ctx, {
+  type: 'line',
+  data: { labels: [], datasets: [] },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: {
+        display: true,
+        text: 'Инфляция по категориям за период'
+      }
+    }
+  }
+});
+
+// Генерация годов от 2015 до 2025
+function generateYearOptions() {
+  const startYearSelect = document.getElementById('startYear');
+  const endYearSelect = document.getElementById('endYear');
+  
+  // Очищаем существующие опции
+  startYearSelect.innerHTML = '';
+  endYearSelect.innerHTML = '';
+  
+  // Генерируем годы от 2015 до 2025
+  for (let year = 2015; year <= 2025; year++) {
+    const option = document.createElement('option');
+    option.value = year;
+    option.textContent = year;
+    
+    // Добавляем в оба селекта
+    startYearSelect.appendChild(option.cloneNode(true));
+    endYearSelect.appendChild(option);
+  }
+  
+  // Устанавливаем начальные значения
+  startYearSelect.value = 2015;
+  endYearSelect.value = 2025;
+  
+  // Обновляем доступные опции
+  updateYearOptions();
+}
+
+// Обновление доступных опций в зависимости от выбора
+function updateYearOptions() {
+  const startYear = parseInt(document.getElementById('startYear').value);
+  const endYear = parseInt(document.getElementById('endYear').value);
+  const endYearSelect = document.getElementById('endYear');
+  
+  // Для конечного года оставляем только годы >= начального
+  Array.from(endYearSelect.options).forEach(option => {
+    option.disabled = parseInt(option.value) < startYear;
+  });
+  
+  // Корректируем значение, если оно стало невалидным
+  if (endYear < startYear) {
+    endYearSelect.value = startYear;
+  }
+}
+
+// Основная функция загрузки данных
+async function fetchAndUpdateChart() {
+  const country1Select = document.getElementById("country1");
+  const country2Select = document.getElementById("country2");
+  const categorySelect = document.getElementById("category");
+  const startYear = parseInt(document.getElementById("startYear").value);
+  const endYear = parseInt(document.getElementById("endYear").value);
+
+  const country1 = country1Select.selectedOptions[0].dataset.value;
+  const country2 = country2Select.selectedOptions[0].dataset.value;
+  const category = categorySelect.selectedOptions[0].dataset.value;
+
+  // Показываем спиннер загрузки
+  document.getElementById("loadingSpinner").style.display = "block";
+
+  let url = "";
+  let raw = [];
+  
+  try {
+    if (category === "CPI Inflation") {
+      url = `https://localhost:7227/api/inflation/compare-by-category?country1=${encodeURIComponent(country1)}&country2=${encodeURIComponent(country2)}&category=${encodeURIComponent(category)}&startYear=${startYear}&endYear=${endYear}`;
+    } else {
+      url = `https://localhost:7227/api/inflation/category-data?country1=${encodeURIComponent(country1)}&country2=${encodeURIComponent(country2)}&category=${encodeURIComponent(category)}`;
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("API error");
+    raw = await response.json();
+    
+    // Для гистограммы преобразуем данные
+    if (category !== "CPI Inflation") {
+      const latestYear = Math.max(...raw.map(item => item.year));
+      raw = raw.filter(item => item.year === latestYear);
+    }
+  } catch (err) {
+    console.warn("API недоступно. Используем тестовые данные.");
+    
+    // Генерируем тестовые данные в зависимости от типа графика
+    if (category === "CPI Inflation") {
+      for (let year = startYear; year <= endYear; year++) {
+        raw.push(
+          { year, rate: 3 + Math.random() * 3, country: country1 },
+          { year, rate: 2 + Math.random() * 2, country: country2 }
+        );
+      }
+    } else {
+      const latestYear = 2023;
+      raw = [
+        { year: latestYear, rate: 5 + Math.random() * 5, country: country1 },
+        { year: latestYear, rate: 3 + Math.random() * 3, country: country2 }
+      ];
+    }
+  } finally {
+    document.getElementById("loadingSpinner").style.display = "none";
+  }
+
+  // Подготовка данных для графика
+  let labels, values1, values2;
+  
+  if (category === "CPI Inflation") {
+    // Для линейного графика (общая инфляция)
+    const data1 = raw.filter(r => r.country === country1);
+    const data2 = raw.filter(r => r.country === country2);
+    labels = [...new Set([...data1, ...data2].map(r => r.year))]
+      .filter(y => y >= startYear && y <= endYear)
+      .sort();
+    
+    values1 = labels.map(y => data1.find(r => r.year === y)?.rate ?? null);
+    values2 = labels.map(y => data2.find(r => r.year === y)?.rate ?? null);
+  } else {
+    // Для гистограммы (остальные категории)
+    labels = [country1Select.value, country2Select.value];
+    values1 = [raw.find(r => r.country === country1)?.rate ?? 0];
+    values2 = [raw.find(r => r.country === country2)?.rate ?? 0];
+  }
+
+  // Определяем тип графика и настройки
+  const isLineChart = category === "CPI Inflation";
+  chart.destroy();
+  chart = new Chart(ctx, {
+    type: isLineChart ? 'line' : 'bar',
+    data: {
+      labels: isLineChart ? labels : [categorySelect.selectedOptions[0].text],
+      datasets: [
+        {
+          label: country1Select.value,
+          data: isLineChart ? values1 : [values1[0]],
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.7)',
+          fill: isLineChart,
+          tension: 0.3
+        },
+        {
+          label: country2Select.value,
+          data: isLineChart ? values2 : [values2[0]],
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.7)',
+          fill: isLineChart,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        title: {
+          display: true,
+          text: isLineChart 
+            ? `Инфляция (${categorySelect.selectedOptions[0].text}) за период ${startYear}-${endYear}`
+            : `Сравнение ${categorySelect.selectedOptions[0].text} (последние данные)`
+        }
+      },
+      scales: isLineChart ? {} : {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+// Обработчик изменения категории
+function handleCategoryChange() {
+  const categorySelect = document.getElementById("category");
+  const periodContainer = document.getElementById("periodContainer");
+  const isGeneralInflation = categorySelect.selectedOptions[0].dataset.value === "CPI Inflation";
+  
+  // Показываем/скрываем выбор периода
+  periodContainer.classList.toggle("hidden", !isGeneralInflation);
+  
+  // Обновляем график
+  fetchAndUpdateChart();
+}
+
+// Инициализация обработчиков событий
+function initEventListeners() {
+  document.getElementById('country1').addEventListener('change', fetchAndUpdateChart);
+  document.getElementById('country2').addEventListener('change', fetchAndUpdateChart);
+  document.getElementById('category').addEventListener('change', handleCategoryChange);
+  
+  document.getElementById('startYear').addEventListener('change', function() {
+    updateYearOptions();
+    fetchAndUpdateChart();
+  });
+  
+  document.getElementById('endYear').addEventListener('change', fetchAndUpdateChart);
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  generateYearOptions();
+  initEventListeners();
+  fetchAndUpdateChart();
+  
+  // Обработчик скролла для header
+  let lastScroll = 0;
+  const header = document.getElementById("mainHeader");
+  window.addEventListener("scroll", () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > lastScroll) {
+      header.classList.add("header-hidden");
+    } else {
+      header.classList.remove("header-hidden");
+    }
+    lastScroll = currentScroll <= 0 ? 0 : currentScroll;
+  });
+});
+</script>
+</body>
+</html>
