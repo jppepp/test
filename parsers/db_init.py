@@ -7,7 +7,7 @@ def init_db():
         conn = psycopg2.connect(
             dbname="inflation_data",
             user="postgres",
-            password="1111",
+            password="123",
             host="localhost",
             port="5432"
         )

@@ -1,0 +1,279 @@
+2025-05-18 15:00:52,492 - economic_monitor - INFO - === Запуск системы мониторинга экономических данных ===
+2025-05-18 15:00:52,492 - economic_monitor - INFO - Инициализация базы данных...
+2025-05-18 15:00:52,582 - economic_monitor - INFO - База данных успешно инициализирована
+2025-05-18 15:00:52,584 - economic_monitor - INFO - === Этап 1: Сбор данных инфляции ===
+2025-05-18 15:00:52,584 - economic_monitor - INFO - Начало сбора данных по инфляции
+2025-05-18 15:00:52,584 - economic_monitor - INFO - Обработка данных для Brazil
+2025-05-18 15:00:53,679 - economic_monitor - INFO - PPI Inflation: -0.62%
+2025-05-18 15:00:54,580 - economic_monitor - INFO - CPI Housing Utilities: 0.14%
+2025-05-18 15:00:55,517 - economic_monitor - INFO - CPI Transportation: -0.38%
+2025-05-18 15:00:56,502 - economic_monitor - INFO - Food Inflation: 7.81%
+2025-05-18 15:00:56,926 - economic_monitor - INFO - Инфляция за 2015: 9.01%
+2025-05-18 15:00:57,332 - economic_monitor - INFO - Инфляция за 2016: 8.77%
+2025-05-18 15:00:57,723 - economic_monitor - INFO - Инфляция за 2017: 3.46%
+2025-05-18 15:00:58,137 - economic_monitor - INFO - Инфляция за 2018: 3.66%
+2025-05-18 15:00:58,610 - economic_monitor - INFO - Инфляция за 2019: 3.74%
+2025-05-18 15:00:59,022 - economic_monitor - INFO - Инфляция за 2020: 3.21%
+2025-05-18 15:00:59,442 - economic_monitor - INFO - Инфляция за 2021: 8.28%
+2025-05-18 15:00:59,845 - economic_monitor - INFO - Инфляция за 2022: 9.34%
+2025-05-18 15:01:00,306 - economic_monitor - INFO - Инфляция за 2023: 4.6%
+2025-05-18 15:01:00,736 - economic_monitor - INFO - Инфляция за 2024: 4.37%
+2025-05-18 15:01:01,184 - economic_monitor - INFO - Инфляция за 2025: 5.16%
+2025-05-18 15:01:01,184 - economic_monitor - INFO - Обработка данных для China
+2025-05-18 15:01:02,106 - economic_monitor - INFO - PPI Inflation: -0.38%
+2025-05-18 15:01:03,143 - economic_monitor - ERROR - Ошибка обработки CPI Housing Utilities для China: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 40, in parse_cpi_housing_utilities
+    print("Не удалось найти таблицу с данными CPI Housing. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 102, in collect_inflation_data
+    rate = config['parser'](html)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 60, in parse_cpi_housing_utilities
+    return handle_parsing_error("CPI Housing", e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 5, in handle_parsing_error
+    print(f"Ошибка в парсере {parser_name}: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:04,180 - economic_monitor - ERROR - Ошибка обработки CPI Transportation для China: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 67, in parse_cpi_transportation
+    print("Не удалось найти таблицу с данными CPI Transportation. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 102, in collect_inflation_data
+    rate = config['parser'](html)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 87, in parse_cpi_transportation
+    return handle_parsing_error("CPI Transportation", e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 5, in handle_parsing_error
+    print(f"Ошибка в парсере {parser_name}: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:05,137 - economic_monitor - INFO - Food Inflation: -0.2%
+2025-05-18 15:01:05,613 - economic_monitor - INFO - Инфляция за 2015: 1.44%
+2025-05-18 15:01:06,326 - economic_monitor - INFO - Инфляция за 2016: 2.0%
+2025-05-18 15:01:06,697 - economic_monitor - INFO - Инфляция за 2017: 1.59%
+2025-05-18 15:01:07,116 - economic_monitor - INFO - Инфляция за 2018: 2.07%
+2025-05-18 15:01:07,608 - economic_monitor - INFO - Инфляция за 2019: 2.9%
+2025-05-18 15:01:07,999 - economic_monitor - INFO - Инфляция за 2020: 2.44%
+2025-05-18 15:01:08,384 - economic_monitor - INFO - Инфляция за 2021: 0.99%
+2025-05-18 15:01:08,775 - economic_monitor - INFO - Инфляция за 2022: 1.98%
+2025-05-18 15:01:09,191 - economic_monitor - INFO - Инфляция за 2023: 0.24%
+2025-05-18 15:01:09,695 - economic_monitor - INFO - Инфляция за 2024: 0.22%
+2025-05-18 15:01:10,084 - economic_monitor - INFO - Инфляция за 2025: -0.11%
+2025-05-18 15:01:10,084 - economic_monitor - INFO - Обработка данных для Russia
+2025-05-18 15:01:11,000 - economic_monitor - INFO - PPI Inflation: -1.38%
+2025-05-18 15:01:11,988 - economic_monitor - ERROR - Ошибка обработки CPI Housing Utilities для Russia: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 40, in parse_cpi_housing_utilities
+    print("Не удалось найти таблицу с данными CPI Housing. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 102, in collect_inflation_data
+    rate = config['parser'](html)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 60, in parse_cpi_housing_utilities
+    return handle_parsing_error("CPI Housing", e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 5, in handle_parsing_error
+    print(f"Ошибка в парсере {parser_name}: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:12,990 - economic_monitor - ERROR - Ошибка обработки CPI Transportation для Russia: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 67, in parse_cpi_transportation
+    print("Не удалось найти таблицу с данными CPI Transportation. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 102, in collect_inflation_data
+    rate = config['parser'](html)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 87, in parse_cpi_transportation
+    return handle_parsing_error("CPI Transportation", e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 5, in handle_parsing_error
+    print(f"Ошибка в парсере {parser_name}: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:13,948 - economic_monitor - INFO - Food Inflation: 12.42%
+2025-05-18 15:01:14,368 - economic_monitor - INFO - Инфляция за 2015: 15.55%
+2025-05-18 15:01:14,770 - economic_monitor - INFO - Инфляция за 2016: 7.07%
+2025-05-18 15:01:15,152 - economic_monitor - INFO - Инфляция за 2017: 3.69%
+2025-05-18 15:01:15,533 - economic_monitor - INFO - Инфляция за 2018: 2.88%
+2025-05-18 15:01:16,050 - economic_monitor - INFO - Инфляция за 2019: 4.48%
+2025-05-18 15:01:16,441 - economic_monitor - INFO - Инфляция за 2020: 3.38%
+2025-05-18 15:01:16,869 - economic_monitor - INFO - Инфляция за 2021: 6.68%
+2025-05-18 15:01:17,236 - economic_monitor - INFO - Инфляция за 2022: 11.53%
+2025-05-18 15:01:17,568 - economic_monitor - ERROR - Ошибка обработки данных за 2023 год: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parse_inflation_data.py", line 15, in parse_inflation_data
+    print(f"Обнаружено некорректное значение инфляции: {inflation_rate}. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 137, in collect_inflation_data
+    inflation_rate = parse_inflation_data(html)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parse_inflation_data.py", line 32, in parse_inflation_data
+    print(f"Неожиданная ошибка при парсинге данных: {e}. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:17,972 - economic_monitor - ERROR - Ошибка обработки данных за 2024 год: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parse_inflation_data.py", line 15, in parse_inflation_data
+    print(f"Обнаружено некорректное значение инфляции: {inflation_rate}. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 137, in collect_inflation_data
+    inflation_rate = parse_inflation_data(html)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parse_inflation_data.py", line 32, in parse_inflation_data
+    print(f"Неожиданная ошибка при парсинге данных: {e}. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:18,320 - economic_monitor - ERROR - Ошибка обработки данных за 2025 год: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parse_inflation_data.py", line 15, in parse_inflation_data
+    print(f"Обнаружено некорректное значение инфляции: {inflation_rate}. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 137, in collect_inflation_data
+    inflation_rate = parse_inflation_data(html)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parse_inflation_data.py", line 32, in parse_inflation_data
+    print(f"Неожиданная ошибка при парсинге данных: {e}. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:18,321 - economic_monitor - INFO - Обработка данных для Indonesia
+2025-05-18 15:01:19,274 - economic_monitor - INFO - PPI Inflation: -0.05%
+2025-05-18 15:01:20,339 - economic_monitor - INFO - CPI Housing Utilities: 6.6%
+2025-05-18 15:01:21,340 - economic_monitor - INFO - CPI Transportation: -0.01%
+2025-05-18 15:01:22,392 - economic_monitor - INFO - Food Inflation: 2.17%
+2025-05-18 15:01:22,819 - economic_monitor - INFO - Инфляция за 2015: 6.38%
+2025-05-18 15:01:23,272 - economic_monitor - INFO - Инфляция за 2016: 3.53%
+2025-05-18 15:01:23,689 - economic_monitor - INFO - Инфляция за 2017: 3.81%
+2025-05-18 15:01:24,095 - economic_monitor - INFO - Инфляция за 2018: 3.2%
+2025-05-18 15:01:24,558 - economic_monitor - INFO - Инфляция за 2019: 3.03%
+2025-05-18 15:01:25,146 - economic_monitor - INFO - Инфляция за 2020: 1.93%
+2025-05-18 15:01:25,666 - economic_monitor - INFO - Инфляция за 2021: 1.56%
+2025-05-18 15:01:26,096 - economic_monitor - INFO - Инфляция за 2022: 4.21%
+2025-05-18 15:01:26,539 - economic_monitor - INFO - Инфляция за 2023: 3.68%
+2025-05-18 15:01:26,924 - economic_monitor - INFO - Инфляция за 2024: 2.18%
+2025-05-18 15:01:27,344 - economic_monitor - INFO - Инфляция за 2025: 0.91%
+2025-05-18 15:01:27,344 - economic_monitor - INFO - Обработка данных для India
+2025-05-18 15:01:28,394 - economic_monitor - ERROR - Ошибка обработки PPI Inflation для India: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 30, in parse_ppi_data
+    print("Не удалось найти данные PPI. Записываем 0.", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 102, in collect_inflation_data
+    rate = config['parser'](html)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 33, in parse_ppi_data
+    return handle_parsing_error("PPI", e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\parsers.py", line 5, in handle_parsing_error
+    print(f"Ошибка в парсере {parser_name}: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:29,421 - economic_monitor - INFO - CPI Housing Utilities: 0.93%
+2025-05-18 15:01:30,504 - economic_monitor - INFO - CPI Transportation: 0.12%
+2025-05-18 15:01:31,468 - economic_monitor - INFO - Food Inflation: 1.78%
+2025-05-18 15:01:31,944 - economic_monitor - INFO - Инфляция за 2015: 5.88%
+2025-05-18 15:01:32,328 - economic_monitor - INFO - Инфляция за 2016: 4.97%
+2025-05-18 15:01:32,729 - economic_monitor - INFO - Инфляция за 2017: 2.49%
+2025-05-18 15:01:33,249 - economic_monitor - INFO - Инфляция за 2018: 4.85%
+2025-05-18 15:01:33,623 - economic_monitor - INFO - Инфляция за 2019: 7.66%
+2025-05-18 15:01:34,101 - economic_monitor - INFO - Инфляция за 2020: 5.58%
+2025-05-18 15:01:34,497 - economic_monitor - INFO - Инфляция за 2021: 4.89%
+2025-05-18 15:01:34,933 - economic_monitor - INFO - Инфляция за 2022: 5.9%
+2025-05-18 15:01:35,414 - economic_monitor - INFO - Инфляция за 2023: 5.56%
+2025-05-18 15:01:35,945 - economic_monitor - INFO - Инфляция за 2024: 3.81%
+2025-05-18 15:01:36,456 - economic_monitor - INFO - Инфляция за 2025: 2.88%
+2025-05-18 15:01:36,456 - economic_monitor - INFO - Завершение сбора данных по инфляции
+2025-05-18 15:01:36,456 - economic_monitor - INFO - === Этап 2: Сбор новостей ===
+2025-05-18 15:01:36,456 - economic_monitor - INFO - Начало сбора новостей
+2025-05-18 15:01:36,703 - economic_monitor - ERROR - Ошибка сбора новостей: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\news_parser.py", line 183, in collect_all_news
+    print(f"Получено {len(news)} новостей от {source_name}")
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 163, in collect_news_data
+    saved, duplicates = collect_all_news(max_news_per_source=5)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\news_parser.py", line 185, in collect_all_news
+    print(f"Ошибка при парсинге {source_name}: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:36,706 - economic_monitor - INFO - === Этап 3: Нормализация данных ===
+2025-05-18 15:01:36,706 - economic_monitor - INFO - Начало нормализации данных
+2025-05-18 15:01:36,765 - economic_monitor - ERROR - Ошибка нормализации: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\normalization.py", line 31, in normalize_data
+    print("Данные успешно нормализованы")
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\normalization.py", line 54, in normalize_inflation_data
+    return normalizer.normalize_data()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\normalization.py", line 39, in normalize_data
+    print(f"Неожиданная ошибка при нормализации: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 172, in normalize_data
+    if normalize_inflation_data():
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Asus\Downloads\test-main\parsers\normalization.py", line 56, in normalize_inflation_data
+    print(f"Неожиданная ошибка: {e}", file=sys.stderr)
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:36,766 - economic_monitor - INFO - === Итоги работы ===
+2025-05-18 15:01:36,766 - economic_monitor - INFO - Формирование статистики
+2025-05-18 15:01:36,819 - economic_monitor - ERROR - Ошибка формирования статистики: [Errno 22] Invalid argument
+Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\test-main\parsers\main.py", line 187, in display_statistics
+    print("\n=== Статистика новостей ===")
+OSError: [Errno 22] Invalid argument
+2025-05-18 15:01:36,820 - economic_monitor - INFO - Работа системы успешно завершена
+2025-05-18 15:04:52,251 - economic_monitor - INFO - === Запуск системы мониторинга экономических данных ===
+2025-05-18 15:04:52,252 - economic_monitor - INFO - Инициализация базы данных...
+2025-05-18 15:04:52,347 - economic_monitor - INFO - База данных успешно инициализирована
+2025-05-18 15:04:52,347 - economic_monitor - INFO - === Этап 1: Сбор данных инфляции ===
+2025-05-18 15:04:52,348 - economic_monitor - INFO - Начало сбора данных по инфляции
+2025-05-18 15:04:52,348 - economic_monitor - INFO - Обработка данных для Brazil
+2025-05-18 15:04:53,335 - economic_monitor - INFO - PPI Inflation: -0.62%
+2025-05-18 15:04:54,294 - economic_monitor - INFO - CPI Housing Utilities: 0.14%
+2025-05-18 15:04:55,226 - economic_monitor - INFO - CPI Transportation: -0.38%
+2025-05-18 15:04:56,172 - economic_monitor - INFO - Food Inflation: 7.81%
+2025-05-18 15:04:56,682 - economic_monitor - INFO - Инфляция за 2015: 9.01%
+2025-05-18 15:04:57,119 - economic_monitor - INFO - Инфляция за 2016: 8.77%
+2025-05-18 15:04:57,526 - economic_monitor - INFO - Инфляция за 2017: 3.46%
+2025-05-18 15:04:57,917 - economic_monitor - INFO - Инфляция за 2018: 3.66%

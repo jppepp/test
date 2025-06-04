@@ -62,24 +62,41 @@
       <div class="col-md-6">
         <label for="country" class="form-label">Страна:</label>
         <select class="form-select" id="country" required>
-          <option selected>Россия</option>
-          <option>США</option>
-          <option>Германия</option>
-          <option>Китай</option>
+          <option selected value="Russia">Россия</option>
+          <option value="Brazil">Бразилия</option>
+          <option value="China">Китай</option>
+          <option value="Indonesia">Индонезия</option>
+          <option value="India">Индия</option>
         </select>
         <div class="invalid-feedback">Выберите страну.</div>
       </div>
 
       <div class="col-md-3">
         <label for="startYear" class="form-label">Начальный год:</label>
-        <input type="number" class="form-control" id="startYear" required>
-        <div class="invalid-feedback">Введите начальный год.</div>
+        <select class="form-select" id="startYear" required>
+          <option value="" selected disabled>Выберите год</option>
+          <!-- Годы от 2015 до 2025 -->
+          <script>
+            for (let year = 2015; year <= 2025; year++) {
+              document.write(`<option value="${year}">${year}</option>`);
+            }
+          </script>
+        </select>
+        <div class="invalid-feedback">Выберите начальный год.</div>
       </div>
 
       <div class="col-md-3">
         <label for="endYear" class="form-label">Конечный год:</label>
-        <input type="number" class="form-control" id="endYear" required>
-        <div class="invalid-feedback">Введите конечный год.</div>
+        <select class="form-select" id="endYear" required>
+          <option value="" selected disabled>Выберите год</option>
+          <!-- Годы от 2015 до 2025 -->
+          <script>
+            for (let year = 2015; year <= 2025; year++) {
+              document.write(`<option value="${year}">${year}</option>`);
+            }
+          </script>
+        </select>
+        <div class="invalid-feedback">Выберите конечный год.</div>
       </div>
 
       <div class="col-md-6">
@@ -125,8 +142,25 @@
     lastScroll = currentScroll <= 0 ? 0 : currentScroll;
   });
 
+  // Обновление доступных годов для конечного года при изменении начального года
+  document.getElementById("startYear").addEventListener("change", function() {
+    const startYear = parseInt(this.value);
+    const endYearSelect = document.getElementById("endYear");
+    
+    // Включаем все годы начиная с выбранного начального года
+    for (let option of endYearSelect.options) {
+      const year = parseInt(option.value);
+      option.disabled = year < startYear;
+      
+      // Если текущее значение конечного года стало недоступно, сбрасываем выбор
+      if (option.selected && option.disabled) {
+        endYearSelect.selectedIndex = 0;
+      }
+    }
+  });
+
   async function fetchInflationRate(country, startYear, endYear) {
-    const url = `/api/inflation/rate?country=${encodeURIComponent(country)}&startYear=${startYear}&endYear=${endYear}`;
+    const url = `https://localhost:7227/api/inflation/rate?country=${encodeURIComponent(country)}&startYear=${startYear}&endYear=${endYear}`;
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Ошибка API");
@@ -151,6 +185,15 @@
     const country = document.getElementById("country").value;
     const start = parseInt(document.getElementById("startYear").value);
     const end = parseInt(document.getElementById("endYear").value);
+
+    // Проверка, что конечный год не меньше начального
+    if (end < start) {
+      document.getElementById("endYear").classList.add("is-invalid");
+      document.getElementById("endYear").nextElementSibling.textContent = "Конечный год не может быть меньше начального";
+      return;
+    } else {
+      document.getElementById("endYear").classList.remove("is-invalid");
+    }
 
     const rate = await fetchInflationRate(country, start, end);
     if (isNaN(rate)) {

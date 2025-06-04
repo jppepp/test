@@ -54,4 +54,11 @@ public class InflationController : ControllerBase
             return StatusCode(500, $"Ошибка сервера: {ex.Message}");
         }
     }
+
+    [HttpGet("rate")]
+    public async Task<IActionResult> Rate([FromQuery] string country, [FromQuery] int startYear, [FromQuery] int endYear)
+    {
+        int result = await _dataService.GetInflationCalculateResult(country, startYear, endYear);
+        return Ok(new { Rate = result });
+    }
 }

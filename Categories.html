@@ -57,7 +57,27 @@
     .hidden {
       display: none !important;
     }
-  </style>
+  
+    .chart-controls {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .annotation {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      color: #666;
+    }
+    .year-notice {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: -1rem;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+    </style>
 </head>
 <body>
 
@@ -120,7 +140,21 @@
       <p>Загрузка данных...</p>
     </div>
 
+    <div id="yearNotice" class="year-notice hidden">Данные за <span id="dataYear">2025</span> год</div>
+
+    <div class="chart-controls">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="toggleDelta">
+        <label class="form-check-label" for="toggleDelta">Показывать прирост инфляции (%)</label>
+      </div>
+      <button class="btn btn-outline-primary btn-sm" id="playBtn">▶️ Анимация</button>
+      <button class="btn btn-outline-success btn-sm" id="forecastBtn">🔮 Прогноз</button>
+    </div>
+
     <canvas id="comparisonChart" height="240"></canvas>
+    <div class="annotation">
+      <strong>📝 Аннотация:</strong> Используются реальные или тестовые данные. При выборе общей инфляции доступны прогноз и анимация.
+    </div>
   </div>
 </main>
 
@@ -131,6 +165,46 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+
+// Функция для интерполяции нулевых значений
+function interpolateZeroValues(values) {
+  return values.map((value, index, array) => {
+    if (value !== 0 && value !== null) return value;
+    
+    // Находим предыдущее ненулевое значение
+    let prevValue = null;
+    for (let i = index - 1; i >= 0; i--) {
+      if (array[i] !== 0 && array[i] !== null) {
+        prevValue = array[i];
+        break;
+      }
+    }
+    
+    // Находим следующее ненулевое значение
+    let nextValue = null;
+    for (let i = index + 1; i < array.length; i++) {
+      if (array[i] !== 0 && array[i] !== null) {
+        nextValue = array[i];
+        break;
+      }
+    }
+    
+    // Если оба значения найдены, вычисляем среднее
+    if (prevValue !== null && nextValue !== null) {
+      return (prevValue + nextValue) / 2;
+    }
+    
+    // Если только предыдущее значение
+    if (prevValue !== null) return prevValue;
+    
+    // Если только следующее значение
+    if (nextValue !== null) return nextValue;
+    
+    // Если ничего не найдено, возвращаем 0
+    return 0;
+  });
+}
+
 // Инициализация графика
 const ctx = document.getElementById("comparisonChart").getContext("2d");
 let chart = new Chart(ctx, {
@@ -147,6 +221,63 @@ let chart = new Chart(ctx, {
     }
   }
 });
+
+let showDelta = false;
+let animationInterval = null;
+let rawChartData = null;
+let forecastVisible = false;
+let originalChartData = null;
+
+function computeDeltas(values) {
+  return values.map((v, i, arr) =>
+    i === 0 || v === null || arr[i - 1] === null ? null : parseFloat((v - arr[i - 1]).toFixed(2))
+  );
+}
+
+function computeForecast(values, years) {
+  const recent = values.slice(-3);
+  if (recent.includes(null)) return { labels: [], values: [] };
+  const lastYear = years[years.length - 1];
+  const avgDiff = (recent[2] - recent[0]) / 2;
+  return {
+    labels: [lastYear + 1, lastYear + 2],
+    values: [recent[2] + avgDiff, recent[2] + 2 * avgDiff]
+  };
+}
+
+function addForecastToChart(chartData) {
+  const forecast1 = computeForecast(chartData.datasets[0].data, chartData.labels);
+  const forecast2 = computeForecast(chartData.datasets[1].data, chartData.labels);
+  chartData.labels.push(...forecast1.labels);
+  chartData.datasets.push({
+    label: chartData.datasets[0].label + ' (прогноз)',
+    data: [
+      ...chartData.datasets[0].data.slice(0), // копия всех предыдущих значений
+      ...forecast1.values
+    ],
+    borderColor: 'rgba(75,192,192,0.5)',
+    borderDash: [5,5],
+    fill: false,
+    tension: 0.3
+  });
+  chartData.datasets.push({
+    label: chartData.datasets[1].label + ' (прогноз)',
+    data: [
+      ...chartData.datasets[1].data.slice(0),
+      ...forecast2.values
+    ],
+    borderColor: 'rgba(255,99,132,0.5)',
+    borderDash: [5,5],
+    fill: false,
+    tension: 0.3
+  });
+}
+
+function updateChartWithForecast(chart, chartData) {
+  addForecastToChart(chartData);
+  chart.data = chartData;
+  chart.update();
+}
 
 // Генерация годов от 2015 до 2025
 function generateYearOptions() {
@@ -210,12 +341,13 @@ async function fetchAndUpdateChart() {
 
   let url = "";
   let raw = [];
+  let dataYear = endYear; // Год данных по умолчанию
   
   try {
     if (category === "CPI Inflation") {
       url = `https://localhost:7227/api/inflation/compare-by-category?country1=${encodeURIComponent(country1)}&country2=${encodeURIComponent(country2)}&category=${encodeURIComponent(category)}&startYear=${startYear}&endYear=${endYear}`;
     } else {
-      url = `https://localhost:7227/api/inflation/category-data?country1=${encodeURIComponent(country1)}&country2=${encodeURIComponent(country2)}&category=${encodeURIComponent(category)}`;
+      url = `https://localhost:7227/api/inflation/compare-by-category?country1=${encodeURIComponent(country1)}&country2=${encodeURIComponent(country2)}&category=${encodeURIComponent(category)}`;
     }
 
     const response = await fetch(url);
@@ -224,8 +356,8 @@ async function fetchAndUpdateChart() {
     
     // Для гистограммы преобразуем данные
     if (category !== "CPI Inflation") {
-      const latestYear = Math.max(...raw.map(item => item.year));
-      raw = raw.filter(item => item.year === latestYear);
+      dataYear = Math.max(...raw.map(item => item.year));
+      raw = raw.filter(item => item.year === dataYear);
     }
   } catch (err) {
     console.warn("API недоступно. Используем тестовые данные.");
@@ -239,14 +371,25 @@ async function fetchAndUpdateChart() {
         );
       }
     } else {
-      const latestYear = 2023;
+      dataYear = 2023;
       raw = [
-        { year: latestYear, rate: 5 + Math.random() * 5, country: country1 },
-        { year: latestYear, rate: 3 + Math.random() * 3, country: country2 }
+        { year: dataYear, rate: 5 + Math.random() * 5, country: country1 },
+        { year: dataYear, rate: 3 + Math.random() * 3, country: country2 }
       ];
     }
   } finally {
     document.getElementById("loadingSpinner").style.display = "none";
+  }
+
+  // Обновляем отображение года данных
+  const yearNotice = document.getElementById("yearNotice");
+  const dataYearElement = document.getElementById("dataYear");
+  
+  if (category === "CPI Inflation") {
+    yearNotice.classList.add("hidden");
+  } else {
+    dataYearElement.textContent = dataYear;
+    yearNotice.classList.remove("hidden");
   }
 
   // Подготовка данных для графика
@@ -262,6 +405,10 @@ async function fetchAndUpdateChart() {
     
     values1 = labels.map(y => data1.find(r => r.year === y)?.rate ?? null);
     values2 = labels.map(y => data2.find(r => r.year === y)?.rate ?? null);
+    
+    // Применяем интерполяцию для нулевых значений
+    values1 = interpolateZeroValues(values1);
+    values2 = interpolateZeroValues(values2);
   } else {
     // Для гистограммы (остальные категории)
     labels = [country1Select.value, country2Select.value];
@@ -271,6 +418,16 @@ async function fetchAndUpdateChart() {
 
   // Определяем тип графика и настройки
   const isLineChart = category === "CPI Inflation";
+  
+  // Сохраняем исходные данные для анимации / прогноза
+  rawChartData = {
+    labels: [...labels],
+    datasets: [
+      { label: country1Select.value, data: [...values1] },
+      { label: country2Select.value, data: [...values2] }
+    ]
+  };
+
   chart.destroy();
   chart = new Chart(ctx, {
     type: isLineChart ? 'line' : 'bar',
@@ -304,6 +461,24 @@ async function fetchAndUpdateChart() {
           text: isLineChart 
             ? `Инфляция (${categorySelect.selectedOptions[0].text}) за период ${startYear}-${endYear}`
             : `Сравнение ${categorySelect.selectedOptions[0].text} (последние данные)`
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const dataset = context.dataset.data;
+              const index = context.dataIndex;
+              const value = dataset[index];
+              const delta = index > 0 && dataset[index - 1] != null
+                ? (value - dataset[index - 1]).toFixed(2)
+                : null;
+
+              if (showDelta && delta !== null) {
+                return `${context.dataset.label}: ${value.toFixed(2)} (Δ ${delta > 0 ? '+' : ''}${delta}%)`;
+              }
+
+              return `${context.dataset.label}: ${value.toFixed(2)}`;
+            }
+          }
         }
       },
       scales: isLineChart ? {} : {
@@ -320,6 +495,13 @@ function handleCategoryChange() {
   const categorySelect = document.getElementById("category");
   const periodContainer = document.getElementById("periodContainer");
   const isGeneralInflation = categorySelect.selectedOptions[0].dataset.value === "CPI Inflation";
+  const forecastBtn = document.getElementById("forecastBtn");
+  const playBtn = document.getElementById("playBtn");
+  const deltaSwitch = document.getElementById("toggleDelta").parentElement;
+
+  forecastBtn.style.display = isGeneralInflation ? "inline-block" : "none";
+  playBtn.style.display = isGeneralInflation ? "inline-block" : "none";
+  deltaSwitch.style.display = isGeneralInflation ? "inline-block" : "none";
   
   // Показываем/скрываем выбор периода
   periodContainer.classList.toggle("hidden", !isGeneralInflation);
@@ -340,12 +522,67 @@ function initEventListeners() {
   });
   
   document.getElementById('endYear').addEventListener('change', fetchAndUpdateChart);
+
+  document.getElementById("toggleDelta").addEventListener("change", e => {
+    showDelta = e.target.checked;
+    fetchAndUpdateChart();
+  });
+
+  let forecastVisible = false;
+  let originalChartData = null;
+
+  document.getElementById("forecastBtn").addEventListener("click", e => {
+    e.preventDefault();
+    if (!chart) return;
+
+    if (!forecastVisible) {
+      // Save original chart state deeply
+      originalChartData = JSON.parse(JSON.stringify(chart.data));
+      const forecastData = JSON.parse(JSON.stringify(chart.data));
+      updateChartWithForecast(chart, forecastData);
+      forecastVisible = true;
+      e.target.textContent = "❌ Убрать прогноз";
+    } else {
+      // Restore original chart
+      chart.data.labels = [...originalChartData.labels];
+      chart.data.datasets = originalChartData.datasets.map(ds => ({ ...ds }));
+      chart.update();
+      forecastVisible = false;
+      e.target.textContent = "🔮 Прогноз";
+    }
+  });
+
+  document.getElementById("playBtn").addEventListener("click", e => {
+    e.preventDefault();
+    if (animationInterval) {
+      clearInterval(animationInterval);
+      animationInterval = null;
+      e.target.textContent = "▶️ Анимация";
+      return;
+    }
+    let i = 0;
+    animationInterval = setInterval(() => {
+      if (i >= rawChartData.labels.length) {
+        clearInterval(animationInterval);
+        animationInterval = null;
+        e.target.textContent = "▶️ Анимация";
+        return;
+      }
+      chart.data.labels = rawChartData.labels.slice(0, i + 1);
+      chart.data.datasets[0].data = rawChartData.datasets[0].data.slice(0, i + 1);
+      chart.data.datasets[1].data = rawChartData.datasets[1].data.slice(0, i + 1);
+      chart.update();
+      i++;
+    }, 800);
+    e.target.textContent = "⏸️ Пауза";
+  });
 }
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
   generateYearOptions();
   initEventListeners();
+  handleCategoryChange();
   fetchAndUpdateChart();
   
   // Обработчик скролла для header
@@ -361,6 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
     lastScroll = currentScroll <= 0 ? 0 : currentScroll;
   });
 });
+
 </script>
 </body>
 </html>

@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using InflationComparison.Models;
+﻿using InflationComparison.Models;
 
 namespace InflationComparison.Services
 {
     public interface IDataService
     {
         Task<IEnumerable<InflationData>> GetComparisonDataAsync(string country1, string country2);
+        Task<int> GetInflationCalculateResult(string country, int startYear, int endYear);
         Task<IEnumerable<InflationData>> GetCategoryComparisonAsync(string country1, string country2, string category);
         Task<IEnumerable<Country>> GetCountriesAsync();
         Task<IEnumerable<DataType>> GetDataTypesAsync();

@@ -1,8 +1,6 @@
 ﻿using InflationComparison.Models;
 using InflationComparison.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace InflationComparison.Controllers
 {
@@ -23,17 +21,18 @@ namespace InflationComparison.Controllers
             return Ok(await _dataService.GetLatestNewsAsync(limit));
         }
 
-        [HttpGet("by-source")]
-        public async Task<ActionResult<IEnumerable<News>>> GetNewsBySource(
-            [FromQuery] string source,
-            [FromQuery] int limit = 3) // По умолчанию 3 новости на источник
+        [HttpGet("filter")]
+        public async Task<IActionResult> Filter(
+            [FromQuery] string country) // По умолчанию 3 новости на источник
         {
-            if (string.IsNullOrEmpty(source))
+            if (string.IsNullOrEmpty(country))
             {
                 return BadRequest("Необходимо указать источник");
             }
 
-            return Ok(await _dataService.GetNewsBySourceAsync(source, limit));
+            var news = await _dataService.GetNewsBySourceAsync(country, 3);
+
+            return Ok(news);
         }
 
         [HttpGet("all-sources")]

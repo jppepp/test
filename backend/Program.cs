@@ -1,5 +1,4 @@
 using InflationComparison.Services;
-using Microsoft.AspNetCore.Builder;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +29,7 @@ app.UseCors(builder => builder
     .AllowAnyOrigin()
     .AllowAnyMethod()
     .AllowAnyHeader());
-app.UseStaticFiles(); 
+app.UseStaticFiles();
 app.MapControllers();
 
 // Проверка подключения к БД при старте

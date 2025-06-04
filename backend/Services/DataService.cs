@@ -1,9 +1,6 @@
 ﻿using Dapper;
 using InflationComparison.Models;
 using Npgsql;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace InflationComparison.Services
 {
@@ -84,7 +81,8 @@ namespace InflationComparison.Services
                     Category = category
                 });
 
-                return results.Select(r => {
+                return results.Select(r =>
+                {
                     if (double.IsNaN(r.Rate ?? 0)) r.Rate = null;
                     return r;
                 });
@@ -163,7 +161,7 @@ namespace InflationComparison.Services
         // Добавляем новые методы в DataService
         public async Task<IEnumerable<News>> GetNewsBySourceAsync(string source, int limit = 3)
         {
-            const string query = @"
+            string query = @"
         SELECT 
             id AS Id,
             title AS Title,
@@ -220,6 +218,26 @@ namespace InflationComparison.Services
                     Limit = limit
                 });
             }
+        }
+
+        public async Task<int> GetInflationCalculateResult(string country, int startYear, int endYear)
+        {
+            const string query = @"
+                SELECT 
+                    rate as Rate
+                FROM inflation_rates i
+                JOIN countries c on i.country_id = c.id
+                WHERE c.name = @country AND i.year BETWEEN @startYear AND @endYear";
+
+            using var connection = new NpgsqlConnection(_connectionString);
+            var rates = await connection.QueryAsync<int>(query, new
+            {
+                country,
+                startYear,
+                endYear
+            });
+
+            return (int)rates.Average();
         }
     }
 }

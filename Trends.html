@@ -34,14 +34,63 @@
       max-width: 1400px;
       border-radius: 8px;
     }
-    .news-column {
-      padding: 1rem;
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      justify-content: center;
+    }
+    .news-card {
+      height: 100%;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      max-width: 350px;
+      margin: 0 auto;
+    }
+    .news-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .news-title {
       color: #28a745;
       font-size: 1.1rem;
       font-weight: 600;
       margin-bottom: 1rem;
+    }
+    .news-source {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #28a745;
+    }
+    .news-description {
+      color: #6c757d;
+      margin-top: 0.75rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .news-date {
+      font-size: 0.85rem;
+      color: #adb5bd;
+      margin-top: 1rem;
+      display: block;
+    }
+    .news-link {
+      text-decoration: none;
+      display: block;
+      height: 100%;
+    }
+    @media (max-width: 768px) {
+      .news-grid {
+        grid-template-columns: 1fr;
+      }
+      .news-card {
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -62,16 +111,16 @@
       <label for="country" class="form-label">Источник:</label>
       <select id="country" class="form-select">
         <option selected disabled>Выберите источник</option>
-        <option value="Министерство Экономики">Министерство Экономики</option>
-        <option value="Министерство финансового развития">Министерство финансового развития</option>
-        <option value="Мировой банк">Мировой банк</option>
+        <option value="MinEconomy Russia">Министерство Экономики</option>
+        <option value="MinFin Russia">Министерство финансового развития</option>
+        <option value="World Bank">Мировой банк</option>
       </select>
     </div>
   </div>
 
   <div class="news-container">
     <h2 class="mb-4 text-center text-success">Инфляционные тренды</h2>
-    <div class="row" id="news-columns">
+    <div class="news-grid" id="news-columns">
       <!-- Новости будут подставлены сюда -->
     </div>
   </div>
@@ -99,7 +148,7 @@
 
     if (!country) return;
 
-    fetch(`/api/news/filter?country=${country}`)
+    fetch(`https://localhost:7227/api/news/filter?country=${country}`)
       .then(res => res.json())
       .then(data => renderNews(data))
       .catch(err => console.error("Ошибка загрузки новостей", err));
@@ -109,27 +158,37 @@
     const container = document.getElementById("news-columns");
     container.innerHTML = "";
 
-    const sources = [...new Set(data.map(item => item.source))];
-    sources.forEach(source => {
-      const column = document.createElement("div");
-      column.className = "col-md-4 news-column";
+    data.slice(0, 5).forEach(news => {
+      const card = document.createElement("div");
+      card.className = "news-card";
 
-      const heading = document.createElement("h5");
-      heading.className = "text-center text-secondary";
-      heading.textContent = source;
-      column.appendChild(heading);
+      const link = document.createElement("a");
+      link.className = "news-link";
+      link.href = news.link;
+      link.target = "_blank";
 
-      data
-        .filter(n => n.source === source)
-        .slice(0, 3)
-        .forEach(news => {
-          const title = document.createElement("div");
-          title.className = "news-title";
-          title.textContent = news.title;
-          column.appendChild(title);
-        });
+      const source = document.createElement("div");
+      source.className = "news-source";
+      source.textContent = news.source || "Источник не указан";
 
-      container.appendChild(column);
+      const title = document.createElement("div");
+      title.className = "news-title";
+      title.textContent = news.title;
+
+      const description = document.createElement("div");
+      description.className = "news-description";
+      description.textContent = news.description || "Читать далее...";
+
+      const date = document.createElement("span");
+      date.className = "news-date";
+      date.textContent = news.date || new Date().toLocaleDateString();
+
+      link.appendChild(source);
+      link.appendChild(title);
+      link.appendChild(description);
+      link.appendChild(date);
+      card.appendChild(link);
+      container.appendChild(card);
     });
   }
 </script>
